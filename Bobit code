@@ -1,0 +1,145 @@
+int counter = 0;  //counter and previous is used to move led lighting
+int previous = 0;
+const int ledPin[] = { 3, 4, 5, 6, 7, 8, 10 };  //array of LED pins
+int buttonState;                                //idk what the difference between is setting it HIGH or LOW
+const int buttonPin = 2;                        //buttonpin
+unsigned long previousMillis = 0;
+unsigned long interval = 1000;  //
+int lvlup = 140;                // level increment
+int point = 0;
+const int buzzer = 9;
+
+void setup() {
+  pinMode(ledPin[0], OUTPUT);  // ledPins[0] = 0 red
+  pinMode(ledPin[1], OUTPUT);  // ledPins[1] = 1 red
+  pinMode(ledPin[2], OUTPUT);  // ledPins[2] = 2 yellow
+  pinMode(ledPin[3], OUTPUT);  // ledPins[3] = 3 green
+  pinMode(ledPin[4], OUTPUT);  // ledPins[4] = 4 yellow
+  pinMode(ledPin[5], OUTPUT);  // ledPins[5] = 5 red
+  pinMode(ledPin[6], OUTPUT);  // ledPins[6] = 6 red
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(buzzer, OUTPUT);
+  Serial.begin(9600);
+  Serial.println("start");
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    Serial.print("current:");
+    Serial.println(point);
+    Serial.print("previous:");
+
+    if (counter == 7)
+      counter = 0;
+    previous = counter - 1;
+
+    if (previous == -1)
+      previous = 6;
+
+    digitalWrite(ledPin[counter], HIGH);
+    counter = counter + 1;
+    digitalWrite(ledPin[previous], LOW);
+
+    buttonState = !digitalRead(buttonPin);
+
+    if (buttonState == HIGH && previous == 3) {  //here difficulty will increases when green is pressed
+      digitalWrite(ledPin[0], HIGH);
+      digitalWrite(ledPin[1], HIGH);
+      digitalWrite(ledPin[2], HIGH);
+      digitalWrite(ledPin[3], HIGH);
+      digitalWrite(ledPin[4], HIGH);
+      digitalWrite(ledPin[5], HIGH);
+      digitalWrite(ledPin[6], HIGH);
+      delay(1000);
+      digitalWrite(ledPin[0], LOW);
+      digitalWrite(ledPin[1], LOW);
+      digitalWrite(ledPin[2], LOW);
+      digitalWrite(ledPin[3], LOW);
+      digitalWrite(ledPin[4], LOW);
+      digitalWrite(ledPin[5], LOW);
+      digitalWrite(ledPin[6], LOW);
+      counter = 0;
+      interval = interval / 2;
+      point = point + 1;
+      tone(buzzer, 1000);
+      delay(100);
+      noTone(buzzer);
+      if (interval <= 100)
+        interval = 80;
+      Serial.println("WIN");
+      Serial.println("point");
+    }
+    if (buttonState == HIGH && (previous == 2 || previous == 4)) {  //when yellow leds are pressed difficulty stays the same
+      digitalWrite(ledPin[2], HIGH);
+      digitalWrite(ledPin[4], HIGH);
+      digitalWrite(ledPin[5], LOW);
+      digitalWrite(ledPin[3], LOW);
+      delay(500);  //delays and then reads everything low
+      digitalWrite(ledPin[0], LOW);
+      digitalWrite(ledPin[1], LOW);
+      digitalWrite(ledPin[2], LOW);
+      digitalWrite(ledPin[3], LOW);
+      digitalWrite(ledPin[4], LOW);
+      digitalWrite(ledPin[5], LOW);
+      digitalWrite(ledPin[6], LOW);
+      counter = 0;
+      tone(buzzer, 500);
+      delay(100);
+      noTone(buzzer);
+      Serial.println("RESTART");
+      Serial.println("point");
+    }
+    if (buttonState == HIGH && (previous == 0 || previous == 1 || previous == 5 || previous == 6 || previous == 7)) {  //difficulty resets here when red leds are pressed
+      digitalWrite(ledPin[0], HIGH);
+      digitalWrite(ledPin[1], HIGH);
+      digitalWrite(ledPin[5], HIGH);
+      digitalWrite(ledPin[6], HIGH);
+      digitalWrite(ledPin[2], LOW);
+      delay(500);
+      digitalWrite(ledPin[0], LOW);
+      digitalWrite(ledPin[1], LOW);
+      digitalWrite(ledPin[2], LOW);
+      digitalWrite(ledPin[3], LOW);
+      digitalWrite(ledPin[4], LOW);
+      digitalWrite(ledPin[5], LOW);
+      digitalWrite(ledPin[6], LOW);
+      counter = 0;
+      interval = 1000;
+      point = 0;
+      tone(buzzer, 100);
+      delay(100);
+      noTone(buzzer);
+      Serial.println("point");
+      Serial.println("LOSE");
+      Serial.println("endloop\n");
+    }
+  }
+}
+
+//I Have an idea with interval? update it kinda worked!?
+//Update again. Got to actually work!
+
+/* using counter does not work, replaced with previous intead
+  if (buttonState == HIGH && (counter == 0 || counter == 1 || counter == 5 || counter == 6) && counter != 3) {
+  digitalWrite(ledPin[0], LOW);
+  digitalWrite(ledPin[1], LOW);
+  digitalWrite(ledPin[2], LOW);
+  digitalWrite(ledPin[3], LOW);
+  digitalWrite(ledPin[4], LOW);
+  digitalWrite(ledPin[5], LOW);
+  digitalWrite(ledPin[6], LOW);
+  probably because counter resets to 0 every time
+*/
+
+
+/*
+  idk if I should even try using these:
+  make Leds blink?
+  change pattern?
+  bounce from left to right?
+  count the amount of times Green LED was hit?
+  use state or cases?
+
+*/
